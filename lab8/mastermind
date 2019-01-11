@@ -1,0 +1,57 @@
+
+# for the instructions regarding the mastermind game, read
+#
+#   http://en.wikipedia.org/wiki/Mastermind_(board_game)
+#
+# command to execute this program is: 
+#
+#   tclsh mastermind -codemaker codeM -codebreaker codeB
+#
+# where
+#
+#   codeM is the executable of a C program for "making   the code"
+#   codeB is the executable of a C program for "breaking the code"
+#
+# let the six colors be named as 0, 1, 2, 3, 4, 5
+
+set argi 0
+while {$argi < [llength $argv]} {
+   if {"-codemaker" == [lindex $argv $argi]} {
+      incr argi
+      set codeMaker [open "|[lindex $argv $argi]" r+]
+   } elseif {"-codebreaker" == [lindex $argv $argi]} {
+      incr argi
+      set codeBreaker [open "|[lindex $argv $argi]" r+]
+   } else {
+      puts "Unkown argument: [lindex $argv $argi]"
+      exit 1
+   }
+   incr argi
+}
+
+set nColorAndPos   0
+set nColorOnly     0 
+
+set count 0
+
+while {$nColorAndPos < 4} {
+
+  incr   count
+  gets   $codeBreaker line
+  regexp {([0-5]) ([0-5]) ([0-5]) ([0-5])} $line dummy p1 p2 p3 p4
+  puts   "Guess: $p1 $p2 $p3 $p4"
+  flush  stdout
+  puts   $codeMaker "$p1 $p2 $p3 $p4"
+  flush  $codeMaker
+  gets   $codeMaker line
+  regexp {([0-4]) ([0-4])} $line dummy nColorAndPos nColorOnly
+  puts   "# pegs correct in colors  and positions: $nColorAndPos"
+  puts   "# pegs correct in colors, not positions: $nColorOnly"
+  flush  stdout
+  puts   $codeBreaker "$nColorAndPos $nColorOnly"
+  flush  $codeBreaker
+
+}  
+
+puts "total number of guesses: $count"
+
